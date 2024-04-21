@@ -1,8 +1,22 @@
 {
   "name": "logseq-google-tasks",
   "version": "1.0.0",
-  "main": "index.html",
+  "main": "dist/index.html",
   "logseq": {
     "id": "_fxvy2z62b"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preinstall": "npx only-allow pnpm"
+  },
+  "dependencies": {
+    "@logseq/libs": "^0.0.17"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10",
+    "vite-plugin-logseq": "^1.1.2"
   }
 }
