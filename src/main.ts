@@ -45,26 +45,56 @@ async function syncGoogleTasks() {
 
   let taskLists = await fetchTaskLists() ?? [];
 
-  let blocksList = await Promise.all(taskLists.map(
+  let tasksArray = (await Promise.all(taskLists.map(
     async (taskList: any) => {
-      let pageName = "GTasks/" + taskList.title;
-      let pageEntity = await ensurePage(pageName, false);
-      if (!pageEntity) {
-        throw new Error("Unable to create page for task list.");
-      }
-
       let tasks = await fetchTasks(taskList.id);
 
-      let taskBlocks = await Promise.all(tasks?.map(blockContentGenerate) ?? []);
-
-      return [pageEntity.uuid, taskBlocks];
+      return tasks?.map((task: any) => {
+        return [taskList, task];
+      });
     }
-  ));
+  ))).flat();
 
-  blocksList.map((list: any) => {
-    let [uuid, blocks] = list;
-    logseq.Editor.insertBatchBlock(uuid, blocks);
-  });
+  let tasksNew: { [key: string]: any[] } = {}
+
+  for (let taskArray of tasksArray) {
+    let [list, task] = taskArray as [any, any];
+
+    let res = await logseq.DB.q(`(property :google-task-id "${task.id}")`);
+
+    if (res && res.length > 1) {
+      console.warn(`Multiple tasks with the same id found: ${task.id}`);
+    }
+
+    if (res && res.length > 0) {
+      if (res[0].properties["googleTaskUpdated"] === task.updated) {
+        continue;
+      }
+
+      console.log(`Update block: ${res[0].uuid} with task: ${task.id}`);
+
+      let block = await blockContentGenerate(task);
+
+      logseq.Editor.updateBlock(res[0].uuid, block.content, { properties: block.properties });
+    }
+    else {
+      console.log(`Insert block for task: ${task.id}`);
+
+      let parentName = "GTasks/" + list.title;
+
+      tasksNew[parentName] = tasksNew[parentName] || [];
+      tasksNew[parentName].push(task)
+    }
+  }
+
+  for (let [parentName, tasks] of Object.entries(tasksNew)) {
+    let pageEntity = await ensurePage(parentName, false);
+    if (!pageEntity) {
+      throw new Error(`Unable to create parent page ${parentName}`);
+    }
+
+    logseq.Editor.insertBatchBlock(pageEntity.uuid, await Promise.all(tasks.map(blockContentGenerate)));
+  }
 }
 
 /**
