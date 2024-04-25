@@ -76,6 +76,19 @@ async function syncGoogleTasks() {
       let block = await blockContentGenerate(list, task);
 
       logseq.Editor.updateBlock(res[0].uuid, block.content, { properties: block.properties });
+
+      // Handle notes and links update
+      let res1 = await logseq.DB.datascriptQuery(`[:find (pull ?b [*]) :where [?b :block/parent ?a] [?a :block/uuid ?uuid] [(str ?uuid) ?str] [(= ?str "${res[0].uuid}")]]`);
+      if (res1) {
+        for (let child of res1) {
+          if (child[0].properties["google-task-context"] === "notes" || child[0].properties["google-task-context"] === "links") {
+            logseq.Editor.removeBlock(child[0].uuid);
+          }
+        }
+      }
+      if (block.children && block.children.length > 0) {
+        logseq.Editor.insertBatchBlock(res[0].uuid, block.children, {sibling: false});
+      }
     }
     else {
       console.log(`Insert block for task: ${task.id}`);
@@ -276,6 +289,9 @@ async function blockContentGenerate(list: any, task: any): Promise<IBatchBlock> 
   if (task.notes) {
     const notesBlock: IBatchBlock = {
       content: task.notes || '',
+      properties: {
+        'google-task-context': 'notes',
+      },
       children: [],
     };
     taskBlock.children = [];
@@ -288,6 +304,9 @@ async function blockContentGenerate(list: any, task: any): Promise<IBatchBlock> 
   if (task.links && task.links.length > 0) {
     const linksBlock: IBatchBlock = {
       content: `\`\`\`\n${JSON.stringify(task.links, null, 2)}\n\`\`\``,
+      properties: {
+        'google-task-context': 'links',
+      },
       children: [],
     };
     taskBlock.children = [];
