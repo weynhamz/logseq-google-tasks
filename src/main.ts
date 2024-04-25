@@ -73,17 +73,17 @@ async function syncGoogleTasks() {
 
       console.log(`Update block: ${res[0].uuid} with task: ${task.id}`);
 
-      let block = await blockContentGenerate(task);
+      let block = await blockContentGenerate(list, task);
 
       logseq.Editor.updateBlock(res[0].uuid, block.content, { properties: block.properties });
     }
     else {
       console.log(`Insert block for task: ${task.id}`);
 
-      let parentName = "GTasks/" + list.title;
+      let parentName = await generateParentName(list, task);
 
       tasksNew[parentName] = tasksNew[parentName] || [];
-      tasksNew[parentName].push(task)
+      tasksNew[parentName].push([list, task])
     }
   }
 
@@ -93,7 +93,9 @@ async function syncGoogleTasks() {
       throw new Error(`Unable to create parent page ${parentName}`);
     }
 
-    logseq.Editor.insertBatchBlock(pageEntity.uuid, await Promise.all(tasks.map(blockContentGenerate)));
+    logseq.Editor.insertBatchBlock(pageEntity.uuid, await Promise.all(tasks.map(async ([list, task]) => {
+      return await blockContentGenerate(list, task);
+    })));
   }
 }
 
@@ -221,7 +223,7 @@ async function ensurePage(page: string, isJournal: boolean = false): Promise<Pag
  * @TODO handle parent relationship
  * @TODO handle repeat of the deadline
  */
-async function blockContentGenerate(task: any): Promise<IBatchBlock> {
+async function blockContentGenerate(list: any, task: any): Promise<IBatchBlock> {
   const { preferredDateFormat, preferredTodo } = await logseq.App.getUserConfigs();
 
   let title = task.title;
@@ -242,6 +244,7 @@ async function blockContentGenerate(task: any): Promise<IBatchBlock> {
 
   taskBlock.properties = {};
   taskBlock.properties["google-task-id"] = task.id;
+  taskBlock.properties["google-task-list"] = `[[GTasks/${list.title}]]`;
   taskBlock.properties["google-task-updated"] = task.updated;
   taskBlock.properties["google-task-webViewLink"] = task.webViewLink;
   if (task.hidden && task.status !== 'completed') {
@@ -292,4 +295,31 @@ async function blockContentGenerate(task: any): Promise<IBatchBlock> {
   }
 
   return taskBlock;
+}
+
+/**
+ * Generates the parent name for a task based on the preferred date format.
+ * @param list - The list containing the task.
+ * @param task - The task for which to generate the parent name.
+ * @returns A string representing the parent name.
+ * @throws An error if neither the updated date nor the due date is available for the task.
+ */
+async function generateParentName(list: any, task: any): Promise<string> {
+  const { preferredDateFormat } = await logseq.App.getUserConfigs();
+  const taskUpdatedDate = task.updated ? new Date(task.updated) : null;
+  const taskDueDate = task.due ? new Date(task.due) : null;
+
+  let earliestDate;
+
+  if (taskUpdatedDate && taskDueDate) {
+    earliestDate = taskUpdatedDate < taskDueDate ? taskUpdatedDate : taskDueDate;
+  } else {
+    earliestDate = taskUpdatedDate || taskDueDate;
+  }
+
+  if (!earliestDate) {
+    throw new Error("Neither updated date nor due date is available for the task.");
+  }
+
+  return `${format(earliestDate, preferredDateFormat)}`;
 }
