@@ -137,13 +137,22 @@ async function fetchTasks(taskListId: string) {
   let tasks: any[] = [];
   let nextPageToken;
   do {
-    let response: any = await gapi.client.tasks.tasks.list({
-      'tasklist': taskListId,
-      'pageToken': nextPageToken,
-      'maxResults': 100,
-      'showHidden': true,
-      'showDeleted': true,
-      'showCompleted': true,
+    // Workaround for bug https://issuetracker.google.com/issues/168580260,
+    // that update individual task does not update the etag of the task list
+    // so the list request will return cached/stalled data.
+    //let response: any = await gapi.client.tasks.tasks.list({
+    let url = `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks?cacheBuster=${Date.now()}`;
+    let response: any = await gapi.client.request({
+      path: url,
+      method: 'GET',
+      params: {
+        'tasklist': taskListId,
+        'pageToken': nextPageToken,
+        'maxResults': 100,
+        'showHidden': true,
+        'showDeleted': true,
+        'showCompleted': true,
+      }
     });
     tasks = tasks.concat(response.result.items);
     nextPageToken = response.result.nextPageToken;
