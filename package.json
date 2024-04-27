@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@logseq/libs": "^0.0.17",
-    "@types/gapi": "^0.0.47",
     "date-fns": "^3.6.0"
   },
   "devDependencies": {
+    "@types/gapi": "^0.0.47",
     "@types/node": "^20.12.7",
     "typescript": "^5.4.5",
     "vite": "^5.2.10",

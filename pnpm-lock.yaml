@@ -11,13 +11,13 @@ importers:
       '@logseq/libs':
         specifier: ^0.0.17
         version: 0.0.17
-      '@types/gapi':
-        specifier: ^0.0.47
-        version: 0.0.47
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0
     devDependencies:
+      '@types/gapi':
+        specifier: ^0.0.47
+        version: 0.0.47
       '@types/node':
         specifier: ^20.12.7
         version: 20.12.7
