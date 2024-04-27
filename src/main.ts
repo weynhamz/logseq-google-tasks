@@ -5,6 +5,10 @@ import { format } from "date-fns";
 
 import settingSchema from "./settings";
 
+interface HttpError extends Error {
+  status?: number;
+}
+
 function main() {
   console.info("Logseq Google Tasks Plugin Loading!");
 
@@ -12,7 +16,18 @@ function main() {
 
   logseq.App.registerCommandPalette(
     { key: "sync-google-tasks", label: "Sync Google Tasks" },
-    syncGoogleTasks
+    async () => {
+      try {
+        await syncGoogleTasks();
+      } catch (error: any) {
+        let httpError = error as HttpError;
+        if (httpError.status === 401) {
+          console.error('plugin-google-tasks: Access token expired, please re-authenticate');
+          logseq.UI.showMsg("Google Tasks Access token expired, please re-authenticate", 'error');
+          logseq.showSettingsUI();
+        }
+      }
+    }
   );
 }
 
