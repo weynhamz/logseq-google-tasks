@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@types/gapi": "^0.0.47",
+    "@types/gapi.client.tasks-v1": "^0.0.5",
     "@types/node": "^20.12.7",
     "typescript": "^5.4.5",
     "vite": "^5.2.10",

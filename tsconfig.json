@@ -7,7 +7,8 @@
       "ESNext"
     ],
     "types": [
-      "vite/client"
+      "vite/client",
+      "gapi.client.tasks-v1"
     ],
     "allowJs": false,
     "skipLibCheck": true,

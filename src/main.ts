@@ -116,7 +116,7 @@ async function syncGoogleTasks() {
  * Fetches all task lists from the Google Tasks API.
  * @returns {Promise<any[]>} A promise that resolves to an array of task lists.
  */
-async function fetchTaskLists() {
+async function fetchTaskLists(): Promise<gapi.client.tasks.TaskList[] | undefined> {
   let taskLists: any[] = [];
   let nextPageToken;
   do {
@@ -134,12 +134,6 @@ async function fetchTaskLists() {
     return;
   }
 
-  // Flatten to string to display
-  const output = taskLists.reduce(
-    (str: any, taskList: any) => `${str}${taskList.title} (${taskList.id})\n`,
-    'Task lists:\n');
-  console.debug(output);
-
   return taskLists;
 }
 
@@ -148,7 +142,7 @@ async function fetchTaskLists() {
  * @param taskListId - The ID of the task list.
  * @returns {Promise<any[]>} A promise that resolves to an array of tasks.
  */
-async function fetchTasks(taskListId: string) {
+async function fetchTasks(taskListId: string): Promise<gapi.client.tasks.Task[] | undefined> {
   let tasks: any[] = [];
   let nextPageToken;
   do {
@@ -177,12 +171,6 @@ async function fetchTasks(taskListId: string) {
     console.info('No tasks found.');
     return;
   }
-
-  // Flatten to string to display
-  const output = tasks.reduce(
-    (str: any, task: any) => `${str}${task.title} (${task.id})\n`,
-    'Tasks:\n');
-  console.debug(output);
 
   return tasks;
 }
@@ -236,7 +224,7 @@ async function ensurePage(page: string, isJournal: boolean = false): Promise<Pag
  * @TODO handle parent relationship
  * @TODO handle repeat of the deadline
  */
-async function blockContentGenerate(list: any, task: any): Promise<IBatchBlock> {
+async function blockContentGenerate(list: gapi.client.tasks.TaskList, task: gapi.client.tasks.Task): Promise<IBatchBlock> {
   const { preferredDateFormat, preferredTodo } = await logseq.App.getUserConfigs();
 
   let title = task.title;
@@ -323,7 +311,7 @@ async function blockContentGenerate(list: any, task: any): Promise<IBatchBlock> 
  * @returns A string representing the parent name.
  * @throws An error if neither the updated date nor the due date is available for the task.
  */
-async function generateParentName(list: any, task: any): Promise<string> {
+async function generateParentName(list: gapi.client.tasks.TaskList, task: gapi.client.tasks.Task): Promise<string> {
   const { preferredDateFormat } = await logseq.App.getUserConfigs();
   const taskUpdatedDate = task.updated ? new Date(task.updated) : null;
   const taskDueDate = task.due ? new Date(task.due) : null;
