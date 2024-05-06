@@ -3,12 +3,15 @@ Logseq Plugin Google Tasks
 
 A Logseq plugin that does bidirectional synchoroization with Google Tasks.
 
+![Google Tasks Blocks](https://discuss.logseq.com/uploads/default/original/3X/5/4/54980ce488f154d7219d4c68ae5b7a920384aed3.png)
 
 ## Set up
 
 Hasn't figured out a best way to perform Google Oauth2 with Logseq plugin yet, currently, user needs to maually get `access_token` and then add to Logseq plugin settings. Google's access token expires around 1 hour. If anyone has a better way of solving this, suggetions and PRs are welcome.
 
 For now, follow till "Authorize credentials for a desktop application" section of this document https://developers.google.com/tasks/quickstart/nodejs, save the `credentials.json` to auth/ folder and then run `pnpm node index.js`, the access_token will be printed on the screen, grab it and save it in the plugin settings, valid for one hour.
+
+Join discussion [here](https://discuss.logseq.com/t/sync-google-tasks-let-me-know-what-you-think-about-my-first-logseq-plugin/26705).
 
 ## Usage
 
