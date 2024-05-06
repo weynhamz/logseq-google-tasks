@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.html",
   "logseq": {
-    "id": "_fxvy2z62b"
+    "id": "logseq-google-tasks"
   },
   "scripts": {
     "dev": "vite",
