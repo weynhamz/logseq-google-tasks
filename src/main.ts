@@ -95,6 +95,12 @@ async function syncGoogleTasks() {
       updateTaskBlock(res[0], list, task);
     }
     else {
+      // When a task is deleted in Google Tasks, the task is marked as deleted
+      // and hidden from UI, then it is deleted asynchronously later.
+      if (task.deleted) {
+        continue;
+      }
+
       console.info(`Insert block for task: ${task.id}`);
 
       let parentName = await generateParentName(list, task);
