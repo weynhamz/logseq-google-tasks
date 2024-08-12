@@ -1,7 +1,7 @@
 import "@logseq/libs";
 import { IBatchBlock, PageEntity, IHookEvent, BlockEntity } from "@logseq/libs/dist/LSPlugin";
 
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 
 import settingSchema from "./settings";
 
@@ -380,6 +380,8 @@ async function generateParentName(list: gapi.client.tasks.TaskList, task: gapi.c
  * @returns A Promise that resolves when the task has been updated.
  */
 async function pushLocalChanges(block: BlockEntity, task: gapi.client.tasks.Task) {
+  const { preferredDateFormat } = await logseq.App.getUserConfigs();
+
   let needsUpdate = false;
   let taskNew = { ...task };
   let taskTitle = block.content
@@ -401,7 +403,7 @@ async function pushLocalChanges(block: BlockEntity, task: gapi.client.tasks.Task
     // This is now a feature provided by a plugin, which links to a jdournal,
     // page, there is a possiblity that completed date is not recorded.
     if (block.properties?.completed) {
-      taskNew.completed = format(new Date((block.properties.completed || '').replace(/\[\[|\]\]/g, '')), 'yyyy-MM-dd') + 'T00:00:00.000Z';
+      taskNew.completed = format(parse(block.properties.completed[0], preferredDateFormat, new Date()), 'yyyy-MM-dd') + 'T00:00:00.000Z';
     }
     needsUpdate = true;
   }
