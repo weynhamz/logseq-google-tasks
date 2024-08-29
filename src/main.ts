@@ -409,7 +409,12 @@ async function pushLocalChanges(block: BlockEntity, task: gapi.client.tasks.Task
     // This is now a feature provided by a plugin, which links to a jdournal,
     // page, there is a possiblity that completed date is not recorded.
     if (block.properties?.completed) {
-      taskNew.completed = format(parse(block.properties.completed[0], preferredDateFormat, new Date()), 'yyyy-MM-dd') + 'T00:00:00.000Z';
+      if (typeof block.properties?.completed == 'string') {
+        taskNew.completed = format(parse((block.properties.completed || '').replace(/\[\[|\]\]/g, ''), preferredDateFormat, new Date()), 'yyyy-MM-dd') + 'T00:00:00.000Z'
+      }
+      else {
+        taskNew.completed = format(parse(block.properties.completed[0], preferredDateFormat, new Date()), 'yyyy-MM-dd') + 'T00:00:00.000Z';
+      }
     }
     needsUpdate = true;
   }
@@ -422,7 +427,7 @@ async function pushLocalChanges(block: BlockEntity, task: gapi.client.tasks.Task
   // Handle deadline, format is 20240202
   if (block.deadline) {
     let deadlineFormatted = block.deadline.toString().slice(0, 4) + '-' + block.deadline.toString().slice(4, 6) + '-' + block.deadline.toString().slice(6, 8);
-    if (format(new Date(deadlineFormatted), 'yyyy-MM-dd') !== format(new Date(task.due as string), 'yyyy-MM-dd')) {
+    if (!task.due || format(new Date(deadlineFormatted), 'yyyy-MM-dd') !== format(new Date(task.due as string), 'yyyy-MM-dd')) {
       console.debug(format(new Date(deadlineFormatted), 'yyyy-MM-dd') + 'T00:00:00.000Z');
       console.debug(task.due);
       taskNew.due = format(new Date(deadlineFormatted), 'yyyy-MM-dd') + 'T00:00:00.000Z';
