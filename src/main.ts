@@ -5,12 +5,14 @@ import { format, parse } from "date-fns";
 
 import settingSchema from "./settings";
 
+const pluginId = 'logseq-google-tasks';
+
 interface HttpError extends Error {
   status?: number;
 }
 
 function main() {
-  console.info("Logseq Google Tasks Plugin Loading!");
+  console.info(`#${pluginId}: ` + "Logseq Google Tasks Plugin Loading!");
 
   settingSchema();
 
@@ -22,7 +24,7 @@ function main() {
       } catch (error: any) {
         let httpError = error as HttpError;
         if (httpError.status === 401) {
-          console.error('plugin-google-tasks: Access token expired, please re-authenticate');
+          console.error(`#${pluginId}: ` + 'Access token expired, please re-authenticate');
           logseq.UI.showMsg("Google Tasks Access token expired, please re-authenticate", 'error');
           logseq.showSettingsUI();
         }
@@ -36,7 +38,7 @@ logseq.ready(main).catch(console.error);
 declare var gapi: any;
 
 async function syncGoogleTasks() {
-  console.info("Start Syncing Google Tasks");
+  console.info(`#${pluginId}: ` + "Start Syncing Google Tasks");
 
   console.debug(gapi);
 
@@ -79,7 +81,7 @@ async function syncGoogleTasks() {
     let res = await logseq.DB.q(`(property :google-task-id "${task.id}")`);
 
     if (res && res.length > 1) {
-      console.warn(`Multiple tasks with the same id found: ${task.id}`);
+      console.warn(`#${pluginId}: ` + `Multiple tasks with the same id found: ${task.id}`);
     }
 
     if (res && res.length > 0) {
@@ -101,7 +103,7 @@ async function syncGoogleTasks() {
         continue;
       }
 
-      console.info(`Insert block for task: ${task.id}`);
+      console.info(`#${pluginId}: ` + `Insert block for task: ${task.id}`);
 
       let parentName = await generateParentName(list, task);
 
@@ -140,7 +142,7 @@ async function fetchTaskLists(): Promise<gapi.client.tasks.TaskList[] | undefine
   } while (nextPageToken);
 
   if (!taskLists || taskLists.length == 0) {
-    console.info('No task lists found.');
+    console.info(`#${pluginId}: ` + 'No task lists found.');
     return;
   }
 
@@ -178,7 +180,7 @@ async function fetchTasks(taskListId: string): Promise<gapi.client.tasks.Task[] 
   } while (nextPageToken);
 
   if (!tasks || tasks.length == 0) {
-    console.info('No tasks found.');
+    console.info(`#${pluginId}: ` + 'No tasks found.');
     return;
   }
 
@@ -209,7 +211,7 @@ async function ensurePage(page: string, isJournal: boolean = false): Promise<Pag
  * @param task - The task object.
  */
 async function updateTaskBlock(block: BlockEntity, list: gapi.client.tasks.TaskList | string, task: gapi.client.tasks.Task) {
-  console.info(`Update block: ${block.uuid} with task: ${task.id} : ${task.title}`);
+  console.info(`#${pluginId}: ` + `Update block: ${block.uuid} with task: ${task.id} : ${task.title}`);
   console.debug('Remote' + task.updated);
   console.debug(task);
   console.debug('Local ' + block.properties?.["googleTaskUpdated"]);
@@ -476,6 +478,6 @@ async function pushLocalChanges(block: BlockEntity, task: gapi.client.tasks.Task
 
     updateTaskBlock(block, block.properties?.["googleTaskListId"] as string, updatedTask.result as gapi.client.tasks.Task);
 
-    console.info(`Task ${task.id} has been changed locally`);
+    console.info(`#${pluginId}: ` + `Task ${task.id} has been changed locally`);
   }
 }
