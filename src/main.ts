@@ -17,7 +17,7 @@ function main() {
   settingSchema();
 
   logseq.App.registerCommandPalette(
-    { key: "sync-google-tasks", label: "Sync Google Tasks" },
+    { key: "sync-google-tasks", label: "Sync Google Tasks", keybinding: { binding: '' } },
     async () => {
       try {
         await syncGoogleTasks();
