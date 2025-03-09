@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "dist/index.html",
   "logseq": {
-    "id": "logseq-google-tasks"
+    "id": "logseq-google-tasks",
+    "icon": "https://www.gstatic.com/images/branding/product/1x/tasks_48dp.png",
+    "description": "Google Tasks integration for Logseq"
   },
   "scripts": {
     "dev": "vite",
