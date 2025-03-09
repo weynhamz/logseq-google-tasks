@@ -23,11 +23,11 @@ async function syncGoogleTasks() {
 
   console.debug(gapi.client);
 
-  if (!logseq.settings?.access_token) {
+  if (!logseq.settings!.access_token) {
     throw new Error("Access token is not set.");
   }
 
-  let token = JSON.parse('{"access_token":"' + logseq.settings.access_token + '"}');
+  let token = JSON.parse('{"access_token":"' + logseq.settings!.access_token + '"}');
   gapi.client.setToken(token);
 
   await new Promise(resolve => {
