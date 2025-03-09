@@ -233,7 +233,7 @@ async function updateTaskBlock(block: BlockEntity, list: gapi.client.tasks.TaskL
   if (res) {
     console.debug(res);
     for (let child of res) {
-      if (child[0].properties["google-task-context"] === "notes" || child[0].properties["google-task-context"] === "links") {
+      if (child[0].properties && (child[0].properties["google-task-context"] === "notes" || child[0].properties["google-task-context"] === "links")) {
         await logseq.Editor.removeBlock(child[0].uuid);
       }
     }
