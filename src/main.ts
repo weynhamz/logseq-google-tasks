@@ -119,13 +119,20 @@ async function syncGoogleTasks() {
       throw new Error(`Unable to create parent page ${parentName}`);
     }
 
+    let pageBlocksTree = await logseq.Editor.getPageBlocksTree(pageEntity.uuid);
+    console.debug(pageBlocksTree);
+
+    // A better way to handle target block, even if for new page
+    let targetBlock = pageBlocksTree[pageBlocksTree.length - 1];
+    console.debug(targetBlock);
+
     let tasksNew = await Promise.all(tasks.map(async ([list, task]) => {
       return await blockContentGenerate(list, task);
     }));
 
     console.debug(tasksNew);
 
-    logseq.Editor.insertBatchBlock(pageEntity.uuid, tasksNew);
+    logseq.Editor.insertBatchBlock(targetBlock.uuid, tasksNew);
   }
 }
 
