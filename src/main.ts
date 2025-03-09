@@ -1,5 +1,5 @@
 import "@logseq/libs";
-import { IBatchBlock, PageEntity, IHookEvent, BlockEntity } from "@logseq/libs/dist/LSPlugin";
+import { IBatchBlock, PageEntity, BlockEntity } from "@logseq/libs/dist/LSPlugin";
 
 import { format, parse } from "date-fns";
 
