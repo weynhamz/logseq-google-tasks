@@ -114,13 +114,18 @@ async function syncGoogleTasks() {
 
   for (let [parentName, tasks] of Object.entries(tasksNew)) {
     let pageEntity = await ensurePage(parentName, false);
+    console.debug(pageEntity);
     if (!pageEntity) {
       throw new Error(`Unable to create parent page ${parentName}`);
     }
 
-    logseq.Editor.insertBatchBlock(pageEntity.uuid, await Promise.all(tasks.map(async ([list, task]) => {
+    let tasksNew = await Promise.all(tasks.map(async ([list, task]) => {
       return await blockContentGenerate(list, task);
-    })));
+    }));
+
+    console.debug(tasksNew);
+
+    logseq.Editor.insertBatchBlock(pageEntity.uuid, tasksNew);
   }
 }
 
@@ -136,6 +141,7 @@ async function fetchTaskLists(): Promise<gapi.client.tasks.TaskList[] | undefine
       'maxResults': 100,
       'pageToken': nextPageToken
     });
+    console.debug(response.result);
 
     taskLists = taskLists.concat(response.result.items);
     nextPageToken = response.result.nextPageToken;
@@ -175,6 +181,7 @@ async function fetchTasks(taskListId: string): Promise<gapi.client.tasks.Task[] 
         'showCompleted': true,
       }
     });
+    console.debug(response.result);
     tasks = tasks.concat(response.result.items);
     nextPageToken = response.result.nextPageToken;
   } while (nextPageToken);
