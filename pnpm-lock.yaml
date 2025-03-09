@@ -180,8 +180,8 @@ packages:
   '@maxim_mazurok/gapi.client.discovery-v1@0.1.20200806':
     resolution: {integrity: sha512-Wl6UfmZVDdWbY3PUu8E2ULk9RPLjnMqp/iOA4tcK8Ne+U/GmlnWP/e34IaZNGArfl7iXJNOG+/3Rj9L9jQyF9Q==}
 
-  '@maxim_mazurok/gapi.client.tasks-v1@0.0.20240423':
-    resolution: {integrity: sha512-qM2lu246pUZ36rNACXXYJtVVl/3xyzIz73vk0pmOgvLOeydAYBQnnOIPxlQTX8B/A/pBv0gxqlLXEA2mjocV4g==}
+  '@maxim_mazurok/gapi.client.tasks-v1@0.0.20250304':
+    resolution: {integrity: sha512-a1+bEfSv/lILF+XPxDsRor1bOBm7QnS3WLfZlNpqOo5bPazUwoT55oP5T55Mot78RXVX80T4H00Xi+FsWBTQtg==}
 
   '@rollup/rollup-android-arm-eabi@4.15.0':
     resolution: {integrity: sha512-O63bJ7p909pRRQfOJ0k/Jp8gNFMud+ZzLLG5EBWquylHxmRT2k18M2ifg8WyjCgFVdpA7+rI0YZ8EkAtg6dSUw==}
@@ -511,7 +511,7 @@ snapshots:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
 
-  '@maxim_mazurok/gapi.client.tasks-v1@0.0.20240423':
+  '@maxim_mazurok/gapi.client.tasks-v1@0.0.20250304':
     dependencies:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
@@ -572,7 +572,7 @@ snapshots:
 
   '@types/gapi.client.tasks-v1@0.0.5':
     dependencies:
-      '@maxim_mazurok/gapi.client.tasks-v1': 0.0.20240423
+      '@maxim_mazurok/gapi.client.tasks-v1': 0.0.20250304
 
   '@types/gapi.client@1.0.8': {}
 
