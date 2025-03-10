@@ -13,7 +13,7 @@
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
-    "@logseq/libs": "^0.0.17",
+    "@logseq/libs": "file:../logseq/libs",
     "date-fns": "^3.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
