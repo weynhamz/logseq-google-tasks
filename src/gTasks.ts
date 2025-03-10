@@ -69,11 +69,17 @@ async function initGapi() {
   return true;
 }
 
-export async function handleSync() {
+export async function handleSync(progressCallback: (progress: number) => void, progressMessageCallback: (message: string) => void, setIsSyncing: (isSyncing: boolean) => void) {
+  setIsSyncing(true);
+  progressCallback(0);
+  progressMessageCallback("Authenticating...")
+
   if (!logseq.settings!.access_token && !logseq.settings!.refresh_token) {
     console.info(`#${pluginId}: ` + "No tokens, start auth flow.");
 
     await authGapi();
+
+    setIsSyncing(false);
 
     // No point to continue the rest is async
     return;
@@ -89,6 +95,9 @@ export async function handleSync() {
         console.error(`#${pluginId}: ` + "Refresh Token is not set, please re-authenticate.");
         logseq.UI.showMsg("Refresh Token is not set, please re-authenticate.", 'error');
         logseq.showSettingsUI();
+
+        setIsSyncing(false);
+
         return;
       }
 
@@ -110,6 +119,8 @@ export async function handleSync() {
     }
   }
 
+  progressCallback(5);
+
   // Can not init GAPI, try to re-authenticate
   if (!await initGapi()) {
     console.error(`#${pluginId}: ` + "Failed to refresh token, trying to re-authenticate.");
@@ -120,12 +131,14 @@ export async function handleSync() {
     console.debug(`#${pluginId}: ` + "Access token: " + logseq.settings!.access_token);
     await authGapi();
 
+    setIsSyncing(false);
+
     // No point to continue the rest is async
     return;
   }
 
   try {
-    await syncGoogleTasks();
+    await syncGoogleTasks(progressCallback, progressMessageCallback, setIsSyncing);
   } catch (error: any) {
     let httpError = error as HttpError;
     if (httpError.status === 401) {
@@ -138,10 +151,11 @@ export async function handleSync() {
       console.error(error);
       logseq.UI.showMsg("Error syncing Google Tasks", 'error');
     }
+    setIsSyncing(false);
   }
 }
 
-async function syncGoogleTasks() {
+async function syncGoogleTasks(progressCallback: (progress: number) => void, progressMessageCallback: (message: string) => void, setIsSyncing: (isSyncing: boolean) => void) {
   console.info(`#${pluginId}: ` + "Start Syncing Google Tasks");
 
   let taskLists = await fetchTaskLists() ?? [];
@@ -156,9 +170,19 @@ async function syncGoogleTasks() {
     }
   ))).flat();
 
+  progressCallback(10);
+
   let tasksNew: { [key: string]: any[] } = {}
 
+  let totalTasks = tasksArray.length;
+  let currentTask = 0;
+
   for (let taskArray of tasksArray) {
+    currentTask++;
+    progressCallback(10 + 80 * currentTask / totalTasks);
+    progressMessageCallback(`Syncing task ${currentTask} of ${totalTasks}`);
+    console.debug(`#${pluginId}: ` + `Syncing task ${currentTask} of ${totalTasks}`);
+
     let [list, task] = taskArray as [any, any];
 
     let res = await logseq.DB.q(`(property :google-task-id "${task.id}")`);
@@ -195,6 +219,8 @@ async function syncGoogleTasks() {
     }
   }
 
+  progressMessageCallback("Inserting tasks to Logseq...");
+
   for (let [parentName, tasks] of Object.entries(tasksNew)) {
     let pageEntity = await ensurePage(parentName, false);
     console.debug(pageEntity);
@@ -217,6 +243,9 @@ async function syncGoogleTasks() {
 
     logseq.Editor.insertBatchBlock(targetBlock.uuid, tasksNew);
   }
+
+  progressCallback(100);
+  setIsSyncing(false);
 }
 
 /**
