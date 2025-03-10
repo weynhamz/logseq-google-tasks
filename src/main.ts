@@ -1,7 +1,7 @@
 import "@logseq/libs";
 
 import settingSchema from "./settings";
-import { syncGoogleTasks } from "./gTasks";
+import { handleSync } from "./gTasks";
 
 const pluginId = 'logseq-google-tasks';
 
@@ -13,18 +13,23 @@ function main() {
   logseq.App.registerCommandPalette(
     { key: "sync-google-tasks", label: "Sync Google Tasks", keybinding: { binding: '' } },
     async () => {
-      try {
-        await syncGoogleTasks();
-      } catch (error: any) {
-        let httpError = error as HttpError;
-        if (httpError.status === 401) {
-          console.error(`#${pluginId}: ` + 'Access token expired, please re-authenticate');
-          logseq.UI.showMsg("Google Tasks Access token expired, please re-authenticate", 'error');
-          logseq.showSettingsUI();
-        }
-      }
+      await handleSync();
     }
   );
+
+  logseq.App.onGoogleAuthTokenReceived((payload) => {
+    console.info(`#${pluginId}: ` + "Google Auth Token Received");
+    console.debug(payload);
+
+    let refresh_token = payload.refresh_token ?? logseq.settings!.refresh_token;
+
+    logseq.updateSettings({
+      access_token: payload.access_token,
+      refresh_token: refresh_token,
+    });
+
+    logseq.UI.showMsg("Google Auth Tokens Received", "success");
+  });
 }
 
 logseq.ready(main).catch(console.error);

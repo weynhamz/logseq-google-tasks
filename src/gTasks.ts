@@ -12,8 +12,25 @@ interface HttpError extends Error {
   status?: number;
 }
 
-async function syncGoogleTasks() {
-  console.info(`#${pluginId}: ` + "Start Syncing Google Tasks");
+async function authGapi() {
+  if (!logseq.settings!.client_id || !logseq.settings!.client_secret) {
+    console.error(`#${pluginId}: ` + "Client ID or Client Secret is not set");
+    logseq.UI.showMsg("Client ID or Client Secret is not set", 'error');
+    logseq.showSettingsUI();
+    return;
+  }
+
+  let scope = "openid profile email https://www.googleapis.com/auth/tasks";
+
+  await logseq.App.invokeGoogleAuth(
+    logseq.settings!.client_id,
+    logseq.settings!.client_secret,
+    scope
+  );
+}
+
+async function initGapi() {
+  console.info(`#${pluginId}: ` + "Init GAPI");
 
   console.debug(gapi);
 
@@ -23,9 +40,10 @@ async function syncGoogleTasks() {
 
   console.debug(gapi.client);
 
-  if (!logseq.settings!.access_token) {
-    throw new Error("Access token is not set.");
-  }
+  // As long as we have refresh token, we can accept empty access token
+  //if (!logseq.settings!.access_token) {
+  //  throw new Error("Access token is not set.");
+  //}
 
   let token = JSON.parse('{"access_token":"' + logseq.settings!.access_token + '"}');
   gapi.client.setToken(token);
@@ -35,6 +53,96 @@ async function syncGoogleTasks() {
       discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest'],
     }).then(resolve);
   });
+
+  try {
+    // Make a request to tasks list to check if token is still valid
+    await gapi.client.tasks.tasklists.list({
+      'maxResults': 100,
+    });
+  }
+  catch (error: HttpError) {
+    if (error.status === 401) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export async function handleSync() {
+  if (!logseq.settings!.access_token && !logseq.settings!.refresh_token) {
+    console.info(`#${pluginId}: ` + "No tokens, start auth flow.");
+
+    await authGapi();
+
+    // No point to continue the rest is async
+    return;
+  }
+
+  // We have refresh token, let's try if it is still valid
+  if (logseq.settings!.refresh_token) {
+    console.debug(`#${pluginId}: ` + "Access token: " + logseq.settings!.access_token);
+
+    // Can not init GAPI, try to refresh token
+    if (!await initGapi()) {
+      if (!logseq.settings!.refresh_token) {
+        console.error(`#${pluginId}: ` + "Refresh Token is not set, please re-authenticate.");
+        logseq.UI.showMsg("Refresh Token is not set, please re-authenticate.", 'error');
+        logseq.showSettingsUI();
+        return;
+      }
+
+      console.debug(`#${pluginId}: ` + "Client ID: " + logseq.settings!.client_id);
+      console.debug(`#${pluginId}: ` + "Client Secret: " + logseq.settings!.client_secret);
+      console.debug(`#${pluginId}: ` + "Refresh Token: " + logseq.settings!.refresh_token);
+
+      console.error(`#${pluginId}: ` + 'Access token expired, attempting to refresh token');
+      logseq.UI.showMsg("Google Tasks Access token expired, attempting to refresh token", 'warning');
+
+      await logseq.App.refreshGoogleAuth(
+        logseq.settings!.client_id,
+        logseq.settings!.client_secret,
+        logseq.settings!.refresh_token
+      );
+
+      // sleep for a while to wait for the token to be updated
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  // Can not init GAPI, try to re-authenticate
+  if (!await initGapi()) {
+    console.error(`#${pluginId}: ` + "Failed to refresh token, trying to re-authenticate.");
+    logseq.UI.showMsg("Failed to refresh token, tring to re-authenticate.", 'warning');
+    console.debug(`#${pluginId}: ` + "Client ID: " + logseq.settings!.client_id);
+    console.debug(`#${pluginId}: ` + "Client Secret: " + logseq.settings!.client_secret);
+    console.debug(`#${pluginId}: ` + "Refresh Token: " + logseq.settings!.refresh_token);
+    console.debug(`#${pluginId}: ` + "Access token: " + logseq.settings!.access_token);
+    await authGapi();
+
+    // No point to continue the rest is async
+    return;
+  }
+
+  try {
+    await syncGoogleTasks();
+  } catch (error: any) {
+    let httpError = error as HttpError;
+    if (httpError.status === 401) {
+      console.error(`#${pluginId}: ` + 'Google Tasks Access token expired, something went wrong.');
+      logseq.UI.showMsg("Google Tasks Access token expired, something went wrong.", 'error');
+      logseq.showSettingsUI();
+    }
+    else {
+      console.error(`#${pluginId}: ` + 'Error syncing Google Tasks');
+      console.error(error);
+      logseq.UI.showMsg("Error syncing Google Tasks", 'error');
+    }
+  }
+}
+
+async function syncGoogleTasks() {
+  console.info(`#${pluginId}: ` + "Start Syncing Google Tasks");
 
   let taskLists = await fetchTaskLists() ?? [];
 
