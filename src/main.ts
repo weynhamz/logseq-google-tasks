@@ -1,7 +1,9 @@
 import "@logseq/libs";
 
 import settingSchema from "./settings";
-import { handleSync } from "./gTasks";
+
+// @ts-expect-error
+const css = (t, ...args) => String.raw(t, ...args);
 
 const pluginId = 'logseq-google-tasks';
 
@@ -10,12 +12,25 @@ function main() {
 
   settingSchema();
 
-  logseq.App.registerCommandPalette(
-    { key: "sync-google-tasks", label: "Sync Google Tasks", keybinding: { binding: '' } },
-    async () => {
-      await handleSync();
+
+  logseq.provideStyle(css`
+    .google-tasks-trigger-icon {
+      width: 18px;
+      height: 18px;
+      margin: 0.1em 0.1em 0.1em 0.1em;
+      background-size: cover;
+      background-image: url('https://www.gstatic.com/images/branding/product/1x/tasks_48dp.png');
     }
-  );
+  `);
+
+  logseq.App.registerUIItem("toolbar", {
+    key: "logseq-google-tasks",
+    template: `
+    <a>
+      <div class="google-tasks-trigger-icon"></div>
+    </a>
+  `,
+  });
 
   logseq.App.onGoogleAuthTokenReceived((payload) => {
     console.info(`#${pluginId}: ` + "Google Auth Token Received");
