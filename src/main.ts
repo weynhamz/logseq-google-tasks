@@ -12,6 +12,13 @@ function main() {
 
   settingSchema();
 
+  logseq.provideModel(function() {
+    return {
+      async toggle() {
+        logseq.toggleMainUI();
+      },
+    };
+  }());
 
   logseq.provideStyle(css`
     .google-tasks-trigger-icon {
@@ -26,7 +33,7 @@ function main() {
   logseq.App.registerUIItem("toolbar", {
     key: "logseq-google-tasks",
     template: `
-    <a>
+    <a data-on-click="toggle">
       <div class="google-tasks-trigger-icon"></div>
     </a>
   `,
