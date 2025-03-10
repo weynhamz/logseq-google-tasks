@@ -74,3 +74,7 @@ Don't change any of the `google-task-*` block attributes.
 * DONE How updated works in Gtasks api, automated?
     * Looks like it is
 * TODO Add test coverage to make sure stable iteration.
+* TODO Lockin the current Graph
+* TODO Support Multiple Google Accounts
+* TODO Record the google account at task level
+* TODO Idenfity patched Logseq, for standard Logseq, it should function as is
