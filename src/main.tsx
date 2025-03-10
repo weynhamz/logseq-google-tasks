@@ -41,6 +41,12 @@ function main() {
     }
   `);
 
+  logseq.setMainUIInlineStyle({
+    zIndex: 11,
+    maxHeight: "calc(100% - 50px)",
+    top: "50px",
+  });
+
   logseq.App.registerUIItem("toolbar", {
     key: "logseq-google-tasks",
     template: `
