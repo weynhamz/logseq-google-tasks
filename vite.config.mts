@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite';
-import logseqDevPlugin from "vite-plugin-logseq";
+import logseqPlugin from "vite-plugin-logseq";
 import UnoCSS from 'unocss/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    logseqDevPlugin(),
+    // @ts-ignore
+    logseqPlugin.default(),
     UnoCSS(),
   ],
   // Makes HMR available for development
