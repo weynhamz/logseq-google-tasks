@@ -3,6 +3,11 @@ import "@logseq/libs";
 import settingSchema from "./settings";
 import { handleSync } from "./gTasks";
 
+import React from "react";
+import ReactDOM from "react-dom/client";
+
+import App from "./App";
+
 // @ts-expect-error
 const css = (t, ...args) => String.raw(t, ...args);
 
@@ -12,6 +17,9 @@ function main() {
   console.info(`#${pluginId}: ` + "Logseq Google Tasks Plugin Loading!");
 
   settingSchema();
+
+  const node = ReactDOM.createRoot(document.getElementById("app")!);
+  node.render(<App />);
 
   logseq.provideModel(function() {
     return {
