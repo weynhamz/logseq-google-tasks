@@ -23,8 +23,8 @@ async function authGapi() {
   let scope = "openid profile email https://www.googleapis.com/auth/tasks";
 
   await logseq.App.invokeGoogleAuth(
-    logseq.settings!.client_id,
-    logseq.settings!.client_secret,
+    logseq.settings!.client_id as string,
+    logseq.settings!.client_secret as string,
     scope
   );
 }
@@ -100,9 +100,9 @@ export async function handleSync() {
       logseq.UI.showMsg("Google Tasks Access token expired, attempting to refresh token", 'warning');
 
       await logseq.App.refreshGoogleAuth(
-        logseq.settings!.client_id,
-        logseq.settings!.client_secret,
-        logseq.settings!.refresh_token
+        logseq.settings!.client_id as string,
+        logseq.settings!.client_secret as string,
+        logseq.settings!.refresh_token as string
       );
 
       // sleep for a while to wait for the token to be updated
