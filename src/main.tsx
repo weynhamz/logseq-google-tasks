@@ -7,6 +7,8 @@ import ReactDOM from "react-dom/client";
 
 import App from "./App";
 
+import "virtual:uno.css";
+
 // @ts-expect-error
 const css = (t, ...args) => String.raw(t, ...args);
 
